@@ -53,5 +53,29 @@ namespace LatexClient
             var response = await _client.Request(target)
                 .PostMultipartAsync(p => p.AddFile(fileName, stream, fileName));
         }
+
+        public async Task<CompileResult> Compile()
+        {
+            var response = await _client.Request(SessionUri)
+                .PostJsonAsync(new {finalize = true});
+
+            while (true)
+            {
+                await GetInfo();
+                if (_info.Status == "success")
+                {
+                    return new CompileResult(_client, _info.Product.Href, true);
+                }
+
+                if (_info.Status == "error")
+                {
+                    return new CompileResult(_client, string.Empty, false);
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(1.0));
+            }
+
+
+        }
     }
 }

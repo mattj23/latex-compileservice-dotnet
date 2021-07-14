@@ -10,9 +10,13 @@ namespace LatexClient
         public bool Required { get; set; }
     }
 
-    public class FormLink
+    public class LinkInfo
     {
         public string Href { get; set; }
+    }
+
+    public class FormLinkInfo : LinkInfo
+    {
 
         public string[] Rel { get; set; }
 
