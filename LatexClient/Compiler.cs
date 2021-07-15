@@ -11,16 +11,16 @@ namespace LatexClient
 
     public static class CompilerTypeExtensions
     {
+        private static readonly Dictionary<Compiler, string> _compilers = new Dictionary<Compiler, string>
+        {
+            {Compiler.PdfLatex, "pdflatex"},
+            {Compiler.XeLatex, "xelatex"},
+            {Compiler.LuaLatex, "lualatex"}
+        };
+
         public static string ToCompilerString(this Compiler c)
         {
-            var compilers = new Dictionary<Compiler, string>
-            {
-                {Compiler.PdfLatex, "pdflatex"},
-                {Compiler.XeLatex, "xelatex"},
-                {Compiler.LuaLatex, "lualatex"}
-            };
-
-            return compilers[c];
+            return _compilers[c];
         }
     }
 }

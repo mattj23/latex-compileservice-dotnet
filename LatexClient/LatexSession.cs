@@ -57,6 +57,8 @@ namespace LatexClient
         /// <returns></returns>
         Task UploadTemplate(string targetName, string templateText, object dataPayload);
 
+        Task SetImageConversion(ImageFormats format, int dpi);
+
         /// <summary>
         /// Send the command to the server to begin compilation of the session, then asynchronously wait for its results.
         /// </summary>
@@ -97,6 +99,19 @@ namespace LatexClient
         /// Get the full URI of the session resource on the server
         /// </summary>
         public Uri SessionUri => _client.BaseUrl.AppendPathSegment(_sessionPath).ToUri();
+
+        public async Task SetImageConversion(ImageFormats format, int dpi)
+        {
+            var response = await _client.Request(_sessionPath)
+                .PostJsonAsync(new
+                {
+                    convert = new
+                    {
+                        format = format.ToFormatString(),
+                        dpi = dpi
+                    }
+                });
+        }
 
         /// <summary>
         /// Asynchronously get the session information from the server
