@@ -1,5 +1,8 @@
 ﻿using System.IO;
+using System.IO.IsolatedStorage;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using Flurl.Http;
 
 namespace LatexClient
@@ -7,23 +10,29 @@ namespace LatexClient
     public class CompileResult
     {
         private readonly FlurlClient _client;
-        private readonly string _productUrl;
+        private readonly SessionInfo _info;
 
-        public CompileResult(FlurlClient client, string productUrl, bool isSuccessful)
+        public CompileResult(FlurlClient client, SessionInfo info)
         {
             _client = client;
-            _productUrl = productUrl;
-            IsSuccessful = isSuccessful;
+            _info = info;
         }
 
-        public bool IsSuccessful { get; }
+        public bool IsSuccessful => _info.Status == "success";
 
-        public string Error { get; set; }
-
-        public Stream GetProductStream()
+        public async Task<string> GetLog()
         {
-            var target = _client.
+            var result = await _client.Request(_info.Log.Href)
+                .GetBytesAsync();
 
+            return Encoding.UTF8.GetString(result);
+        }
+
+        public async Task<Stream> GetProduct()
+        {
+            var result = await _client.Request(_info.Product.Href)
+                .GetStreamAsync();
+            return result;
         }
     }
 }

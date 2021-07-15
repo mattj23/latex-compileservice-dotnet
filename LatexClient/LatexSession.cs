@@ -15,12 +15,15 @@ namespace LatexClient
     public class LatexSession
     {
         private readonly FlurlClient _client;
+        private readonly string _sessionPath;
+
         private SessionInfo _info;
 
-        public LatexSession(Uri sessionUri)
+        public LatexSession(Uri endpoint, string sessionPath)
         {
-            SessionUri = sessionUri;
-            _client = new FlurlClient();
+            _sessionPath = sessionPath;
+
+            _client = new FlurlClient(endpoint.ToString());
             _client.Configure(s =>
             {
                 s.JsonSerializer = new NewtonsoftJsonSerializer(new JsonSerializerSettings()
@@ -34,11 +37,11 @@ namespace LatexClient
             });
         }
 
-        public Uri SessionUri { get; }
+        public Uri SessionUri => _client.BaseUrl.AppendPathSegment(_sessionPath).ToUri();
 
         public async Task GetInfo()
         {
-            _info = await _client.Request(SessionUri)
+            _info = await _client.Request(_sessionPath)
                 .GetAsync()
                 .ReceiveJson<SessionInfo>();
         }
@@ -48,9 +51,7 @@ namespace LatexClient
             if (_info is null)
                 await GetInfo();
 
-            var target = SessionUri.Scheme + "://" + SessionUri.Host.AppendPathSegment(_info.AddFile.Href);
-
-            var response = await _client.Request(target)
+            var response = await _client.Request(_info.AddFile.Href)
                 .PostMultipartAsync(p => p.AddFile(fileName, stream, fileName));
         }
 
@@ -62,14 +63,9 @@ namespace LatexClient
             while (true)
             {
                 await GetInfo();
-                if (_info.Status == "success")
+                if (_info.IsFinished)
                 {
-                    return new CompileResult(_client, _info.Product.Href, true);
-                }
-
-                if (_info.Status == "error")
-                {
-                    return new CompileResult(_client, string.Empty, false);
+                    return new CompileResult(_client, _info);
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(1.0));

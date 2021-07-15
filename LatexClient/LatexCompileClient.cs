@@ -7,11 +7,11 @@ namespace LatexClient
 {
     public class LatexCompileClient
     {
-        private readonly string _endpoint;
+        private readonly Uri _endpoint;
 
         public LatexCompileClient(string endpoint)
         {
-            _endpoint = endpoint;
+            _endpoint = new Uri(endpoint);
         }
 
         /// <summary>
@@ -36,7 +36,8 @@ namespace LatexClient
             if (response.ResponseMessage.IsSuccessStatusCode)
             {
                 // Session creation was successful
-                return new LatexSession(response.ResponseMessage.Headers.Location);
+                var location = response.ResponseMessage.Headers.Location;
+                return new LatexSession(_endpoint, location.LocalPath);
             }
 
             throw new NotImplementedException();

@@ -14,5 +14,7 @@
 
         public string Status { get; set; }
 
+        public bool IsFinished => this.Status == "success" || this.Status == "error";
+
     }
 }
