@@ -57,6 +57,14 @@ namespace LatexClient
         /// <returns></returns>
         Task UploadTemplate(string targetName, string templateText, object dataPayload);
 
+        /// <summary>
+        /// Set the session to convert the final product to an image format after compilation. Be aware that using
+        /// high dpi settings and/or converting large (format) files can result in very long compile times and
+        /// timeouts.  Small, label-sized documents at 300 to 600 dpi will convert very quickly on most hardware.
+        /// </summary>
+        /// <param name="format">The destination image format for the conversion</param>
+        /// <param name="dpi">Dots per inch in the final converted image</param>
+        /// <returns></returns>
         Task SetImageConversion(ImageFormats format, int dpi);
 
         /// <summary>
@@ -100,6 +108,14 @@ namespace LatexClient
         /// </summary>
         public Uri SessionUri => _client.BaseUrl.AppendPathSegment(_sessionPath).ToUri();
 
+        /// <summary>
+        /// Set the session to convert the final product to an image format after compilation. Be aware that using
+        /// high dpi settings and/or converting large (format) files can result in very long compile times and
+        /// timeouts.  Small, label-sized documents at 300 to 600 dpi will convert very quickly on most hardware.
+        /// </summary>
+        /// <param name="format">The destination image format for the conversion</param>
+        /// <param name="dpi">Dots per inch in the final converted image</param>
+        /// <returns></returns>
         public async Task SetImageConversion(ImageFormats format, int dpi)
         {
             var response = await _client.Request(_sessionPath)
