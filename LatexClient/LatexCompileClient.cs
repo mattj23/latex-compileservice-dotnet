@@ -21,7 +21,7 @@ namespace LatexClient
         /// <param name="compiler"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public async Task<LatexSession> CreateSession(Compiler compiler, string target)
+        public async Task<ILatexSession> CreateSession(Compiler compiler, string target)
         {
             var url = _endpoint 
                 .AppendPathSegment("api")

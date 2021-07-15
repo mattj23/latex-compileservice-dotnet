@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -43,6 +44,18 @@ namespace LatexClient
         /// <param name="filePath">A path to the file locally which will be opened and saved to the server</param>
         /// <returns></returns>
         Task UploadFile(string fileName, string filePath);
+
+        /// <summary>
+        /// Upload a template to the session. The target name provided is the file to which the rendered template will
+        /// be saved within the session. The template text is the contents of the template file, and the data payload is
+        /// an object which will be serialized to JSON and contains the structure for the Jinja2 rendering engine to
+        /// insert into the template.
+        /// </summary>
+        /// <param name="targetName">The name to save the file to after rendering</param>
+        /// <param name="templateText">The text contents of the template file</param>
+        /// <param name="dataPayload">An object containing the data to be rendered into the template</param>
+        /// <returns></returns>
+        Task UploadTemplate(string targetName, string templateText, object dataPayload);
 
         /// <summary>
         /// Send the command to the server to begin compilation of the session, then asynchronously wait for its results.
@@ -126,6 +139,35 @@ namespace LatexClient
         public Task UploadFile(string fileName, string filePath)
         {
             return UploadFile(fileName, File.OpenRead(filePath));
+        }
+
+        /// <summary>
+        /// Upload a template to the session. The target name provided is the file to which the rendered template will
+        /// be saved within the session. The template text is the contents of the template file, and the data payload is
+        /// an object which will be serialized to JSON and contains the structure for the Jinja2 rendering engine to
+        /// insert into the template.
+        /// </summary>
+        /// <param name="targetName">The name to save the file to after rendering</param>
+        /// <param name="templateText">The text contents of the template file</param>
+        /// <param name="dataPayload">An object containing the data to be rendered into the template</param>
+        /// <returns></returns>
+        public async Task UploadTemplate(string targetName, string templateText, object dataPayload)
+        {
+            if (_info is null)
+                await GetInfo();
+
+            var response = await _client.Request(_info.AddTemplates.Href)
+                .PostJsonAsync(new
+                {
+                    target = targetName,
+                    text = templateText,
+                    data = dataPayload
+                });
+
+            if (!response.ResponseMessage.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException($"Error uploading {targetName}: {response.ResponseMessage.ReasonPhrase}");
+            }
         }
 
         /// <summary>
